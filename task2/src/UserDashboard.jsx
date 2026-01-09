@@ -30,7 +30,7 @@ export default function UserDashboard() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!text.trim()) return;
+        if (rating === 0) return; // Only ensure rating exists
 
         setLoading(true);
         setError(null);

@@ -25,6 +25,15 @@ def generate_user_response(review_text: str, stars: int) -> str:
     Generates an enterprise-grade professional response based on sentiment analysis.
     Simulates Amazon/Large-Corp customer service tone.
     """
+    # HANDLE EMPTY TEXT
+    if not review_text or not review_text.strip():
+        if stars >= 4:
+             return f"Thank you for your {stars}-star rating! We are thrilled to see that you had a great experience."
+        elif stars == 3:
+             return "Thank you for your rating. We appreciate your feedback and hope to impress you more next time."
+        else:
+             return "We are sorry to see your low rating. If you would like to share more details, please contact us so we can improve."
+
     text_lower = review_text.lower()
     
     # 1. Critical Mismatch Detection (High Rating + Negative Text)
@@ -78,6 +87,9 @@ def generate_admin_summary(review_text: str) -> str:
     """
     Extracts a concise executive summary.
     """
+    if not review_text or not review_text.strip():
+        return "No written feedback provided."
+
     words = review_text.split()
     if len(words) > 12:
         return f"Key customer topic: '{' '.join(words[:6])}...' (Analysis pending)"
@@ -88,6 +100,14 @@ def generate_action_items(review_text: str, stars: int) -> list:
     Generates actionable SOPs (Standard Operating Procedures) for the admin team.
     """
     actions = []
+    
+    if not review_text or not review_text.strip():
+        if stars < 3:
+            actions.append("SOP-200: Low Rating Investigation (No Text)")
+        else:
+             actions.append("Log Rating")
+        return actions
+
     text_lower = review_text.lower()
 
     # Mismatch Flag
