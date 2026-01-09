@@ -1,6 +1,5 @@
 import random
 
-# Keyword Dictionaries
 NEGATIVE_KEYWORDS = [
     "bad", "terrible", "worst", "awful", "horrible", "hate", "disappointed", 
     "poor", "slow", "rude", "useless", "broken", "defective", "mess", "dirty", 
@@ -27,16 +26,13 @@ def detect_fake_review(text: str) -> bool:
     if not text: return False
     text = text.lower().strip()
     
-    # Check 1: Repetition (e.g., "good good good good")
     words = text.split()
     if len(words) > 3 and len(set(words)) < len(words) * 0.5:
         return True
         
-    # Check 2: Gibberish / Key smash (very long words)
     if any(len(w) > 20 for w in words):
         return True
         
-    # Check 3: Suspicious Patterns
     fake_triggers = ["fake", "bot", "script", "test", "asdf"]
     if any(t in text for t in fake_triggers):
         return True
@@ -47,7 +43,6 @@ def generate_user_response(review_text: str, stars: int) -> str:
     """
     Generates an enterprise-grade professional response.
     """
-    # HANDLE EMPTY TEXT
     if not review_text or not review_text.strip():
         if stars >= 4:
              return f"Thank you for your {stars}-star rating! We are thrilled to see that you had a great experience."
@@ -58,7 +53,7 @@ def generate_user_response(review_text: str, stars: int) -> str:
 
     text_lower = review_text.lower()
     
-    # 1. Critical Mismatch Detection (High Rating + Negative Text)
+    # Critical Mismatch Detection
     if stars >= 4:
         found_negatives = [word for word in NEGATIVE_KEYWORDS if word in text_lower]
         if found_negatives:
@@ -66,12 +61,12 @@ def generate_user_response(review_text: str, stars: int) -> str:
                     "in your review. We strive for perfection and would love to understand if there's anything "
                     "we can resolve. Please contact our escalation team at support@example.com.")
 
-    # 2. Urgent / High Risk Scenarios
+    # High Risk Scenarios
     if any(word in text_lower for word in URGENT_KEYWORDS):
         return ("We treat this matter with the utmost seriousness. An escalation case has been created immediately. "
                 "A senior support specialist will review your case. Please expect direct communication within the hour.")
 
-    # 3. Low Rating (1-2 Stars)
+    # Low Rating (1-2 Stars)
     if stars <= 2:
         if "wait" in text_lower or "slow" in text_lower or "delay" in text_lower:
             return ("We sincerely apologize for the delay. This falls below the standard of speed and efficiency "
@@ -88,12 +83,12 @@ def generate_user_response(review_text: str, stars: int) -> str:
         return ("We sincerely apologize for the dissatisfaction caused. We value you as a customer and would like "
                 "the opportunity to make this right. Please contact customer care so we can assist you directly.")
 
-    # 4. Neutral Rating
+    # Neutral Rating
     elif stars == 3:
         return ("Thank you for your feedback. We appreciate your honesty and are constantly working to improve. "
                 "Your comments have been noted by our quality assurance team to help us serve you better in the future.")
 
-    # 5. High Rating
+    # High Rating
     else: 
         if "staff" in text_lower or "service" in text_lower:
             return ("Thank you for recognizing our team's efforts. We are delighted to hear you received excellent service. "
@@ -123,11 +118,10 @@ def generate_action_items(review_text: str, stars: int) -> list:
     """
     actions = []
     
-    # 1. Fake Detection
     if detect_fake_review(review_text):
         actions.append("🚫 SUSPICIOUS: AI detected potential fake/spam review.")
         actions.append("SOP-999: Move to Trash / Verify User Identity")
-        return actions # Return early to prioritize flagging
+        return actions
 
     if not review_text or not review_text.strip():
         if stars < 3:
@@ -138,18 +132,15 @@ def generate_action_items(review_text: str, stars: int) -> list:
 
     text_lower = review_text.lower()
 
-    # Mismatch Flag
     if stars >= 4 and any(word in text_lower for word in NEGATIVE_KEYWORDS):
         actions.append("⚠️ FLAG: Sentiment Audit Required (High Rating / Negative Text)")
         actions.append("SOP-101: Manual Verification")
 
-    # Urgent Flags
     if any(word in text_lower for word in URGENT_KEYWORDS):
         actions.append("🚨 URGENT: Legal/Safety Risk Identified")
         actions.append("SOP-900: Execute Instant Escalation Protocol")
         return actions 
 
-    # Low Star Actions
     if stars < 3:
         actions.append("Ticket Priority: HIGH")
         actions.append("SOP-202: Retention Outreach")
@@ -158,7 +149,6 @@ def generate_action_items(review_text: str, stars: int) -> list:
         if "staff" in text_lower or "rude" in text_lower:
             actions.append("Notify HR / Shift Manager")
     
-    # High Star Actions
     if stars == 5 and not any(word in text_lower for word in NEGATIVE_KEYWORDS):
         actions.append("Automated Gratitude Sequence")
         if "staff" in text_lower:

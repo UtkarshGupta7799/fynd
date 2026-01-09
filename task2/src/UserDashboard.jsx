@@ -7,20 +7,17 @@ export default function UserDashboard() {
     const [rating, setRating] = useState(5);
     const [loading, setLoading] = useState(false);
 
-    // Feedback States
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
     const [modalResponse, setModalResponse] = useState(null);
 
-    // Fetch initial reviews
     useEffect(() => {
         const fetchReviews = async () => {
             try {
                 const res = await fetch('/api/submissions');
                 if (res.ok) {
                     const data = await res.json();
-                    setReviews(data.filter(r => !r.is_deleted).reverse()); // Newest first
-
+                    setReviews(data.filter(r => !r.is_deleted).reverse());
                 }
             } catch (err) {
                 console.error("Failed to load reviews", err);
@@ -31,7 +28,7 @@ export default function UserDashboard() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (rating === 0) return; // Only ensure rating exists
+        if (rating === 0) return;
 
         setLoading(true);
         setError(null);
@@ -48,13 +45,11 @@ export default function UserDashboard() {
 
             const newReview = await res.json();
 
-            // Success Logic
             setReviews(prev => [newReview, ...prev]);
             setText('');
             setRating(5);
             setSuccessMsg("Review submitted successfully!");
 
-            // Show AI Response Modal
             setModalResponse(newReview.ai_response);
 
         } catch (err) {
@@ -92,7 +87,6 @@ export default function UserDashboard() {
             )}
 
             <div className="review-content">
-                {/* Submission Form */}
                 <section className="write-review-section">
                     <h2>Write a Review</h2>
                     <form onSubmit={handleSubmit} className="review-form">
@@ -117,7 +111,6 @@ export default function UserDashboard() {
                             disabled={loading}
                         />
 
-                        {/* Status Toasts */}
                         {error && <div className="error-msg">{error}</div>}
                         {successMsg && <div className="success-msg">{successMsg}</div>}
 
@@ -127,7 +120,6 @@ export default function UserDashboard() {
                     </form>
                 </section>
 
-                {/* Reviews List */}
                 <section className="reviews-list-section">
                     <h3>Recent Reviews ({reviews.length})</h3>
                     <div className="reviews-grid">

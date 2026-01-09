@@ -8,15 +8,11 @@ router = APIRouter()
 
 @router.post("/submit", response_model=ReviewResponse)
 def submit_review(submission: ReviewSubmission):
-    # 1. Generate AI Response
     ai_reply = generate_user_response(submission.text, submission.stars)
-    
-    # 2. Generate Admin Insights
     summary = generate_admin_summary(submission.text)
     actions = generate_action_items(submission.text, submission.stars)
     is_fake = detect_fake_review(submission.text)
 
-    # 3. Save to DB
     new_review = {
         "id": str(uuid.uuid4()),
         "stars": submission.stars,
@@ -25,11 +21,9 @@ def submit_review(submission: ReviewSubmission):
         "ai_summary": summary,
         "ai_actions": actions,
         "is_fake": is_fake,
-        "is_deleted": False # Default active
+        "is_deleted": False 
     }
     
-    # Prepend to DB (newest first logic, though frontend does reverse)
-    # Actually DB is usually append. Let's append.
     reviews_db.append(new_review)
     save_db(reviews_db)
 
@@ -37,9 +31,6 @@ def submit_review(submission: ReviewSubmission):
 
 @router.get("/submissions")
 def get_submissions():
-    # Return everything so Admin can see trash. 
-    # Frontend can filter if needed, or we can add a query param?
-    # For simplicity, return all, frontend filters.
     return reviews_db
 
 @router.delete("/submissions/{review_id}")

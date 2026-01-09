@@ -5,7 +5,7 @@ export default function AdminDashboard() {
     const [submissions, setSubmissions] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const [filterRating, setFilterRating] = useState('all');
-    const [viewMode, setViewMode] = useState('inbox'); // 'inbox' or 'trash'
+    const [viewMode, setViewMode] = useState('inbox');
 
     const fetchSubmissions = async () => {
         try {
@@ -25,7 +25,6 @@ export default function AdminDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    // Analytics (All time, even deleted? Usually analytics exclude deleted. Let's exclude.)
     const analytics = useMemo(() => {
         const activeSubs = submissions.filter(s => !s.is_deleted);
         const total = activeSubs.length;
@@ -42,23 +41,19 @@ export default function AdminDashboard() {
         return { avg, total, distribution };
     }, [submissions]);
 
-    // Filtering Logic
     const displayedSubmissions = submissions.filter(s => {
-        // 1. View Mode (Inbox vs Trash)
         if (viewMode === 'inbox') {
             if (s.is_deleted) return false;
         } else {
             if (!s.is_deleted) return false;
         }
 
-        // 2. Star Filter
         if (filterRating !== 'all') {
             return s.stars === parseInt(filterRating);
         }
         return true;
     });
 
-    // Auto-select first if selection is invalid for current view
     useEffect(() => {
         if (!selectedId && displayedSubmissions.length > 0) {
             setSelectedId(displayedSubmissions[0].id);
@@ -85,7 +80,7 @@ export default function AdminDashboard() {
             }
 
             await fetch(url, { method });
-            fetchSubmissions(); // Refresh immediately
+            fetchSubmissions();
         } catch (err) {
             console.error("Action failed", err);
         }
@@ -122,7 +117,6 @@ export default function AdminDashboard() {
             </div>
 
             <div className="main-content-area">
-                {/* Left Sidebar */}
                 <aside className="sidebar">
                     <div className="sidebar-header">
                         <div className="view-toggle">
@@ -171,7 +165,6 @@ export default function AdminDashboard() {
                     </div>
                 </aside>
 
-                {/* Center View */}
                 <main className="chat-view">
                     {selectedSub ? (
                         <>
@@ -217,7 +210,6 @@ export default function AdminDashboard() {
                     )}
                 </main>
 
-                {/* Right Panel */}
                 <aside className="details-panel">
                     {selectedSub && (
                         <>
