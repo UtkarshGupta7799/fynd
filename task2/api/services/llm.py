@@ -3,10 +3,20 @@ import random
 def generate_user_response(review_text: str, stars: int) -> str:
     """
     Simulates a smart AI response by detecting sentiment keywords.
+    Prioritizes text content over star rating if a negative keyword is found.
     """
     text_lower = review_text.lower()
     
-    # 1. Critical Sentiment Logic
+    # Negative keywords that contradict a high rating
+    negative_keywords = ["bad", "terrible", "worst", "awful", "horrible", "hate", "disappointed", "poor", "slow", "rude"]
+    
+    # 1. Critical Mismatch Detection (High Rating + Negative Text)
+    if stars >= 4:
+        found_negatives = [word for word in negative_keywords if word in text_lower]
+        if found_negatives:
+            return f"We noticed you rated us {stars} stars but mentioned '{found_negatives[0]}'. We want to ensure everything is perfect. Did something go wrong with our service? Please let us know so we can help."
+
+    # 2. General Sentiment Logic
     if stars <= 2:
         if "wait" in text_lower or "slow" in text_lower:
             return "We apologize for the delay you experienced. We're working on improving our service speed."
@@ -19,7 +29,7 @@ def generate_user_response(review_text: str, stars: int) -> str:
     elif stars == 3:
         return "Thank you for your feedback. We aim for 5 stars, so we'll use your suggestions to improve!"
 
-    else: # 4 or 5 stars
+    else: # 4 or 5 stars (Clean)
         if "food" in text_lower or "delicious" in text_lower:
             return "So glad you enjoyed the meal! We hope to see you again soon for more delicious food."
         if "staff" in text_lower or "service" in text_lower:
@@ -41,6 +51,12 @@ def generate_action_items(review_text: str, stars: int) -> list:
     """
     actions = []
     text_lower = review_text.lower()
+    negative_keywords = ["bad", "terrible", "worst", "awful", "horrible", "hate", "disappointed", "poor", "slow", "rude"]
+
+    # Mismatch Flag
+    if stars >= 4 and any(word in text_lower for word in negative_keywords):
+        actions.append("⚠️ INVESTIGATE: Rating/Text Mismatch")
+        actions.append("Contact customer to clarify")
 
     if stars < 3:
         actions.append("Reach out to customer immediately")
@@ -49,7 +65,7 @@ def generate_action_items(review_text: str, stars: int) -> list:
         if "rude" in text_lower:
             actions.append("Review staff shift logs")
     
-    if stars == 5:
+    if stars == 5 and not any(word in text_lower for word in negative_keywords):
         actions.append("Send 'Thank You' email")
         if "staff" in text_lower:
              actions.append("Reward staff member")
