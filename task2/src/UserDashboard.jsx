@@ -1,22 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './UserDashboard.css';
 
 export default function UserDashboard() {
     const [messages, setMessages] = useState([
-        { id: 0, sender: 'ai', text: 'Hi! How was your experience with us today?' }
+        { id: 'init', sender: 'ai', text: 'Hi! How was your experience with us today?' }
     ]);
     const [input, setInput] = useState('');
     const [rating, setRating] = useState(5);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Fetch history on load
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const res = await fetch('/api/submissions');
+                if (res.ok) {
+                    const data = await res.json();
+                    // Convert submitted reviews into chat format
+                    const history = [];
+                    data.forEach(sub => {
+                        // User message
+                        history.push({
+                            id: sub.id + '_user',
+                            sender: 'user',
+                            text: sub.text,
+                            rating: sub.stars
+                        });
+                        // AI Response
+                        history.push({
+                            id: sub.id + '_ai',
+                            sender: 'ai',
+                            text: sub.ai_response
+                        });
+                    });
+
+                    if (history.length > 0) {
+                        setMessages(prev => {
+                            // Avoid duplicates if re-fetching
+                            // Ideally, we'd replace or merge carefully. 
+                            // For this demo, just appending history after init msg is fine.
+                            // We filter out the init message if history exists to avoid clutter?
+                            // Let's just keep init as a welcome unless history is super long.
+                            return [prev[0], ...history];
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load history", err);
+            }
+        };
+        fetchHistory();
+    }, []);
 
     const handleSend = async (e) => {
         e.preventDefault();
         if (!input.trim()) return;
 
         const userMsg = { id: Date.now(), sender: 'user', text: input, rating: rating };
+
+        // Optimistic UI Update
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setLoading(true);
+        setError(null);
 
         try {
             const res = await fetch('/api/submit', {
@@ -24,6 +71,9 @@ export default function UserDashboard() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ stars: rating, text: userMsg.text })
             });
+
+            if (!res.ok) throw new Error("Server Error");
+
             const data = await res.json();
 
             const aiMsg = {
@@ -34,7 +84,8 @@ export default function UserDashboard() {
             setMessages(prev => [...prev, aiMsg]);
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "Sorry, I couldn't process that. Please try again." }]);
+            setError("Failed to send review. Please try again.");
+            setMessages(prev => [...prev, { id: Date.now() + 2, sender: 'ai', text: "❌ Failed to submit review. Please check your connection." }]);
         }
         setLoading(false);
     };
@@ -59,6 +110,7 @@ export default function UserDashboard() {
                     </div>
                 ))}
                 {loading && <div className="message-row ai"><div className="bubble typing">...</div></div>}
+                {error && <div className="error-toast">{error}</div>}
             </div>
 
             <form onSubmit={handleSend} className="input-area">
