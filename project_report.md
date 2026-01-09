@@ -15,21 +15,17 @@ This report documents the solution for the Fynd AI Intern Assessment. The projec
 
 ## 2. Task 1: Rating Prediction via Prompting
 ### Approach
-The objective was to predict star ratings (1-5) from Yelp reviews. I implemented three distinct prompting strategies in the Jupyter Notebook (`task1/rating_prediction.ipynb`):
+The objective was to predict star ratings (1-5) from Yelp reviews. I implemented **five distinct prompting strategies** in the Jupyter Notebook (`task1/rating_prediction.ipynb`) to test robustness:
 
-1.  **Zero-shot Prompting**:
-    - *Method*: Directly asking the LLM to classify the review without examples.
-    - *Rationale*: Establishes a baseline for model performance.
-2.  **Few-shot Prompting**:
-    - *Method*: Providing 3 static examples of reviews and their corresponding ratings (Positive, Negative, Neutral) before the target query.
-    - *Rationale*: Guides the model on the expected output format and sentiment nuances.
-3.  **Chain-of-Thought (CoT)**:
-    - *Method*: Instructing the model to "think step-by-step" and analyze the sentiment *before* assigning a score.
-    - *Rationale*: Improves reasoning capabilities for complex or ambiguous reviews.
+1.  **Zero-shot Prompting**: *Baseline* - Direct classification without examples.
+2.  **Few-shot Prompting**: Provides static examples (Positive, Negative) to guide output format.
+3.  **Chain-of-Thought (CoT)**: Instructs the model to "think step-by-step" before rating.
+4.  **Strict JSON Enforcer**: Uses a System Prompt to enforce strict JSON schema compliance.
+5.  **Self-Correction / Retry**: Implements logic to catch invalid JSON responses and automatically re-prompt the model to fix errors.
 
 ### Evaluation Methodology
-- **Metrics**: Accuracy (Exact Match), JSON Validity Rate (Parsing success), and Reliability.
-- **Dataset**: A sample dataset was utilized to validate the pipeline.
+- **Metrics**: Accuracy (Exact Match), JSON Validity Rate, and Reliability.
+- **Dataset**: A sampled subset (250 rows) of the real Yelp Ratings dataset.
 
 ---
 
