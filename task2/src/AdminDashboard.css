@@ -1,49 +1,261 @@
-.admin-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem;
-    font-family: 'Inter', sans-serif;
-    background: #f0f2f5;
-    min-height: 100vh;
+.admin-layout {
+    display: flex;
+    height: 100vh;
+    background: white;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 300px;
+    border-right: 1px solid var(--border-color);
+    background: var(--sidebar-gray);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.badge-count {
+    background: #E5E7EB;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .submission-list {
-    display: grid;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
 }
 
-.submission-card {
+.inbox-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.1s;
+    border-left: 3px solid transparent;
+}
+
+.inbox-item:hover {
+    background: white;
+}
+
+.inbox-item.active {
+    background: #EFF6FF;
+    /* Light Blue */
+    border-left-color: var(--primary-blue);
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.customer-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.time-ago {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.item-snippet {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Chat View */
+.chat-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    min-width: 400px;
+}
+
+.chat-view-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-view-header h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.subprocess-status {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.resolve-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.chat-stream {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: var(--bg-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Reusing Message message-row styles from UserDashboard via global or duplication */
+.message-row {
+    display: flex;
+    width: 100%;
+}
+
+.message-row.user {
+    justify-content: flex-start;
+}
+
+/* In Admin view, User is "Other" -> Left? No, usually User Left Agent Right */
+/* Wait, in Admin view:
+   User (Customer) = Left (White)
+   Agent (AI) = Right (Blue) 
+   Let's swap standard chat alignment for Admin persona.
+*/
+
+.admin-layout .message-row.user {
+    justify-content: flex-start;
+}
+
+.admin-layout .message-row.user .bubble {
+    background: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+}
+
+.admin-layout .message-row.ai {
+    justify-content: flex-end;
+}
+
+.admin-layout .message-row.ai .bubble {
+    background: var(--primary-blue);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.rating-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: #FBBF24;
+    margin-top: 4px;
+}
+
+.bot-tag {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chat-input-disabled {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    background: #F9FAFB;
+}
+
+.chat-input-disabled input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #E5E7EB;
+}
+
+/* Details Panel */
+.details-panel {
+    width: 300px;
+    border-left: 1px solid var(--border-color);
     background: white;
     padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border-left: 5px solid #0070f3;
+    overflow-y: auto;
 }
 
-.card-header .stars {
-    color: #ffb400;
-    font-size: 1.2rem;
+.panel-section {
+    margin-bottom: 2rem;
 }
 
-.review-text {
-    font-style: italic;
-    color: #333;
-    margin: 1rem 0;
+.panel-section h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
 }
 
-.ai-insights {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
+.summary-text {
+    font-size: 14px;
+    line-height: 1.5;
+    background: #FEF2F2;
+    /* Light Red/Pink for 'Alert' feel or simple gray */
+    background: #F3F4F6;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 0;
 }
 
-.summary {
-    margin-bottom: 0.5rem;
-}
-
-.actions ul {
-    margin: 0.5rem 0 0 1.2rem;
+.action-list {
+    list-style: none;
     padding: 0;
+    margin: 0;
+}
+
+.action-list li {
+    background: #ECFDF5;
+    color: #065F46;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    border: 1px solid #A7F3D0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.badge.positive {
+    color: #059669;
+}
+
+.badge.negative {
+    color: #DC2626;
 }
