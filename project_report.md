@@ -22,6 +22,7 @@ The objective was to predict star ratings (1-5) from Yelp reviews. I implemented
 3.  **Chain-of-Thought (CoT)**: Instructs the model to "think step-by-step" before rating.
 4.  **Strict JSON Enforcer**: Uses a System Prompt to enforce strict JSON schema compliance.
 5.  **Self-Correction / Retry**: Implements logic to catch invalid JSON responses and automatically re-prompt the model to fix errors.
+6.  **Self-Consistency (Majority Vote)**: *Advanced* - Runs the Chain-of-Thought prompt multiple times (e.g., 3) and selects the most frequent consistent answer, significantly improving reliability for ambiguous reviews.
 
 ### Evaluation Methodology
 - **Metrics**: Accuracy (Exact Match), JSON Validity Rate, and Reliability.
