@@ -6,7 +6,11 @@ export default function UserDashboard() {
     const [text, setText] = useState('');
     const [rating, setRating] = useState(5);
     const [loading, setLoading] = useState(false);
+
+    // Feedback States
     const [error, setError] = useState(null);
+    const [successMsg, setSuccessMsg] = useState(null);
+    const [modalResponse, setModalResponse] = useState(null);
 
     // Fetch initial reviews
     useEffect(() => {
@@ -30,6 +34,7 @@ export default function UserDashboard() {
 
         setLoading(true);
         setError(null);
+        setSuccessMsg(null);
 
         try {
             const res = await fetch('/api/submit', {
@@ -42,13 +47,18 @@ export default function UserDashboard() {
 
             const newReview = await res.json();
 
-            // Add new review to top of list
+            // Success Logic
             setReviews(prev => [newReview, ...prev]);
             setText('');
             setRating(5);
+            setSuccessMsg("Review submitted successfully!");
+
+            // Show AI Response Modal
+            setModalResponse(newReview.ai_response);
+
         } catch (err) {
             console.error(err);
-            setError("Failed to post review. Please try again.");
+            setError("Failed to post review. Is the backend running?");
         }
         setLoading(false);
     };
@@ -59,6 +69,26 @@ export default function UserDashboard() {
                 <h1>Customer Reviews</h1>
                 <p>See what others are saying or leave your own feedback.</p>
             </header>
+
+            {/* AI Response Modal */}
+            {modalResponse && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <span className="modal-icon">✨</span>
+                        <h3>Thanks for your feedback!</h3>
+                        <p className="modal-description">We've received your review. Here's what our support team says:</p>
+
+                        <div className="modal-ai-reply">
+                            <strong>Support Agent:</strong>
+                            {modalResponse}
+                        </div>
+
+                        <button className="modal-close-btn" onClick={() => setModalResponse(null)}>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="review-content">
                 {/* Submission Form */}
@@ -86,7 +116,9 @@ export default function UserDashboard() {
                             disabled={loading}
                         />
 
+                        {/* Status Toasts */}
                         {error && <div className="error-msg">{error}</div>}
+                        {successMsg && <div className="success-msg">{successMsg}</div>}
 
                         <button type="submit" className="submit-btn" disabled={loading}>
                             {loading ? 'Posting...' : 'Post Review'}
@@ -108,8 +140,7 @@ export default function UserDashboard() {
                                             {'★'.repeat(rev.stars)}
                                             <span className="star-bg">{'★'.repeat(5 - rev.stars)}</span>
                                         </div>
-                                        <span className="review-date">Just now</span>
-                                        {/* Since API doesn't return date yet, simplified */}
+                                        <span className="review-date">Verified Customer</span>
                                     </div>
 
                                     <p className="review-body">{rev.text}</p>
