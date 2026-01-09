@@ -31,30 +31,31 @@ Predict 1–5 star ratings from Yelp reviews using **prompt-only LLM approaches*
 Six prompting strategies were implemented and evaluated in
 `task1/rating_prediction.ipynb`:
 
-1. **Zero-Shot Prompting**
+**Zero-Shot Prompting**
    * Baseline classification without examples
    * Fastest, lowest cost, minimal guidance
 
-2. **Few-Shot Prompting**
+**Few-Shot Prompting**
    * Injects labeled sentiment examples
    * Improves output structure and calibration
 
-3. **Chain-of-Thought (CoT)**
+**Chain-of-Thought (CoT)**
    * Enforces step-by-step reasoning
    * Reduces impulsive misclassification on nuanced reviews
 
-4. **Strict JSON Enforcement**
+**Strict JSON Enforcement**
    * System-level constraints to guarantee schema compliance
    * Eliminates downstream parsing failures
 
-5. **Self-Correction / Retry Logic**
+**Self-Correction / Retry Logic**
    * Automatically detects malformed JSON and re-prompts
    * Improves robustness in automated pipelines
 
-6. **Self-Consistency (Majority Voting)**
+**Self-Consistency (Majority Voting)**
    * Runs CoT multiple times (n=3)
    * Final prediction selected via majority consensus
    * Converts stochasticity into statistical reliability
+
 
 ---
 
