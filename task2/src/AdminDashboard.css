@@ -1,8 +1,100 @@
 .admin-layout {
     display: flex;
+    flex-direction: column;
+    /* Changed to column to stack stats on top */
     height: 100vh;
-    background: white;
+    background: #F3F4F6;
     overflow: hidden;
+}
+
+/* Analytics Bar */
+.analytics-bar {
+    background: white;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 2rem;
+    height: 160px;
+    /* Fixed height for stats */
+    flex-shrink: 0;
+}
+
+.metric-card {
+    background: #F9FAFB;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.metric-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 14px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.metric-card .big-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.star-icon {
+    color: #FBBF24;
+    font-size: 24px;
+}
+
+.distribution-chart {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 400px;
+    gap: 4px;
+}
+
+.chart-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #4B5563;
+}
+
+.chart-row .label {
+    width: 40px;
+    text-align: right;
+}
+
+.chart-row .count {
+    width: 20px;
+}
+
+.bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: #FBBF24;
+    border-radius: 4px;
+}
+
+/* Main Content Area */
+.main-content-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    /* Contains the scrollable columns */
+    background: white;
 }
 
 /* Sidebar */
@@ -20,24 +112,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: white;
 }
 
-.sidebar-header h3 {
-    margin: 0;
-    font-size: 16px;
-}
-
-.badge-count {
-    background: #E5E7EB;
-    padding: 2px 8px;
-    border-radius: 10px;
+.filter-select {
     font-size: 12px;
-    font-weight: 600;
+    padding: 4px;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
 }
 
 .submission-list {
     flex: 1;
     overflow-y: auto;
+}
+
+.empty-filter {
+    padding: 2rem;
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 13px;
 }
 
 .inbox-item {
@@ -54,7 +148,6 @@
 
 .inbox-item.active {
     background: #EFF6FF;
-    /* Light Blue */
     border-left-color: var(--primary-blue);
 }
 
@@ -110,15 +203,6 @@
     color: var(--text-muted);
 }
 
-.resolve-btn {
-    background: white;
-    border: 1px solid var(--border-color);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
 .chat-stream {
     flex: 1;
     padding: 1.5rem;
@@ -129,7 +213,6 @@
     gap: 1.5rem;
 }
 
-/* Reusing Message message-row styles from UserDashboard via global or duplication */
 .message-row {
     display: flex;
     width: 100%;
@@ -139,32 +222,25 @@
     justify-content: flex-start;
 }
 
-/* In Admin view, User is "Other" -> Left? No, usually User Left Agent Right */
-/* Wait, in Admin view:
-   User (Customer) = Left (White)
-   Agent (AI) = Right (Blue) 
-   Let's swap standard chat alignment for Admin persona.
-*/
-
-.admin-layout .message-row.user {
-    justify-content: flex-start;
-}
-
-.admin-layout .message-row.user .bubble {
+.message-row.user .bubble {
     background: white;
     color: var(--text-main);
     border: 1px solid var(--border-color);
     border-bottom-left-radius: 4px;
+    padding: 12px 16px;
+    border-radius: 12px;
 }
 
-.admin-layout .message-row.ai {
+.message-row.ai {
     justify-content: flex-end;
 }
 
-.admin-layout .message-row.ai .bubble {
+.message-row.ai .bubble {
     background: var(--primary-blue);
     color: white;
     border-bottom-right-radius: 4px;
+    padding: 12px 16px;
+    border-radius: 12px;
 }
 
 .rating-tag {
@@ -180,22 +256,6 @@
     margin-top: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.chat-input-disabled {
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 10px;
-    background: #F9FAFB;
-}
-
-.chat-input-disabled input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: #E5E7EB;
 }
 
 /* Details Panel */
@@ -222,8 +282,6 @@
 .summary-text {
     font-size: 14px;
     line-height: 1.5;
-    background: #FEF2F2;
-    /* Light Red/Pink for 'Alert' feel or simple gray */
     background: #F3F4F6;
     padding: 10px;
     border-radius: 8px;
@@ -244,18 +302,4 @@
     margin-bottom: 8px;
     font-size: 13px;
     border: 1px solid #A7F3D0;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-}
-
-.badge.positive {
-    color: #059669;
-}
-
-.badge.negative {
-    color: #DC2626;
 }
