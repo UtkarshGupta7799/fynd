@@ -4,7 +4,8 @@ import './AdminDashboard.css';
 export default function AdminDashboard() {
     const [submissions, setSubmissions] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
-    const [filterRating, setFilterRating] = useState('all'); // 'all', 1, 2, 3, 4, 5
+    const [filterRating, setFilterRating] = useState('all');
+    const [viewMode, setViewMode] = useState('inbox'); // 'inbox' or 'trash'
 
     const fetchSubmissions = async () => {
         try {
@@ -12,10 +13,6 @@ export default function AdminDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setSubmissions(data.reverse());
-                // Auto-select first if none selected
-                if (!selectedId && data.length > 0) {
-                    setSelectedId(data[0].id);
-                }
             }
         } catch (err) {
             console.error("Failed to fetch", err);
@@ -28,27 +25,71 @@ export default function AdminDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    // Analytics Calculations
+    // Analytics (All time, even deleted? Usually analytics exclude deleted. Let's exclude.)
     const analytics = useMemo(() => {
-        const total = submissions.length;
+        const activeSubs = submissions.filter(s => !s.is_deleted);
+        const total = activeSubs.length;
         if (total === 0) return { avg: 0, total: 0, distribution: [0, 0, 0, 0, 0] };
 
-        const sum = submissions.reduce((acc, curr) => acc + curr.stars, 0);
+        const sum = activeSubs.reduce((acc, curr) => acc + curr.stars, 0);
         const avg = (sum / total).toFixed(1);
 
-        const distribution = [0, 0, 0, 0, 0]; // 5, 4, 3, 2, 1 stars
-        submissions.forEach(s => {
+        const distribution = [0, 0, 0, 0, 0];
+        activeSubs.forEach(s => {
             if (s.stars >= 1 && s.stars <= 5) distribution[5 - s.stars]++;
         });
 
         return { avg, total, distribution };
     }, [submissions]);
 
-    // Filtered List
-    const filteredSubmissions = submissions.filter(s => {
-        if (filterRating === 'all') return true;
-        return s.stars === parseInt(filterRating);
+    // Filtering Logic
+    const displayedSubmissions = submissions.filter(s => {
+        // 1. View Mode (Inbox vs Trash)
+        if (viewMode === 'inbox') {
+            if (s.is_deleted) return false;
+        } else {
+            if (!s.is_deleted) return false;
+        }
+
+        // 2. Star Filter
+        if (filterRating !== 'all') {
+            return s.stars === parseInt(filterRating);
+        }
+        return true;
     });
+
+    // Auto-select first if selection is invalid for current view
+    useEffect(() => {
+        if (!selectedId && displayedSubmissions.length > 0) {
+            setSelectedId(displayedSubmissions[0].id);
+        } else if (selectedId) {
+            const stillVisible = displayedSubmissions.find(s => s.id === selectedId);
+            if (!stillVisible && displayedSubmissions.length > 0) {
+                setSelectedId(displayedSubmissions[0].id);
+            }
+        }
+    }, [displayedSubmissions, selectedId]);
+
+
+    const handleAction = async (action, id) => {
+        try {
+            let url = `/api/submissions/${id}`;
+            let method = 'DELETE';
+
+            if (action === 'restore') {
+                url = `/api/submissions/${id}/restore`;
+                method = 'POST';
+            } else if (action === 'permanent') {
+                url = `/api/submissions/${id}/permanent`;
+                method = 'DELETE';
+            }
+
+            await fetch(url, { method });
+            fetchSubmissions(); // Refresh immediately
+        } catch (err) {
+            console.error("Action failed", err);
+        }
+    };
 
     const selectedSub = submissions.find(s => s.id === selectedId);
 
@@ -60,7 +101,7 @@ export default function AdminDashboard() {
                     <div className="big-number">{analytics.avg} <span className="star-icon">★</span></div>
                 </div>
                 <div className="metric-card">
-                    <h4>Total Reviews</h4>
+                    <h4>Active Reviews</h4>
                     <div className="big-number">{analytics.total}</div>
                 </div>
                 <div className="distribution-chart">
@@ -81,10 +122,20 @@ export default function AdminDashboard() {
             </div>
 
             <div className="main-content-area">
-                {/* Left Sidebar: Inbox */}
+                {/* Left Sidebar */}
                 <aside className="sidebar">
                     <div className="sidebar-header">
-                        <h3>Inbox</h3>
+                        <div className="view-toggle">
+                            <button
+                                className={viewMode === 'inbox' ? 'active' : ''}
+                                onClick={() => setViewMode('inbox')}
+                            >Inbox</button>
+                            <button
+                                className={viewMode === 'trash' ? 'active' : ''}
+                                onClick={() => setViewMode('trash')}
+                            >Trash 🗑️</button>
+                        </div>
+
                         <select
                             value={filterRating}
                             onChange={(e) => setFilterRating(e.target.value)}
@@ -98,16 +149,20 @@ export default function AdminDashboard() {
                             <option value="1">1 Star</option>
                         </select>
                     </div>
+
                     <div className="submission-list">
-                        {filteredSubmissions.length === 0 && <p className="empty-filter">No matches found</p>}
-                        {filteredSubmissions.map(sub => (
+                        {displayedSubmissions.length === 0 && <p className="empty-filter">No items found</p>}
+                        {displayedSubmissions.map(sub => (
                             <div
                                 key={sub.id}
-                                className={`inbox-item ${selectedId === sub.id ? 'active' : ''}`}
+                                className={`inbox-item ${selectedId === sub.id ? 'active' : ''} ${sub.is_fake ? 'suspicious' : ''}`}
                                 onClick={() => setSelectedId(sub.id)}
                             >
                                 <div className="item-row">
-                                    <span className="customer-name">Visitor {sub.id.slice(0, 4)}</span>
+                                    <span className="customer-name">
+                                        {sub.is_fake && "⚠️ "}
+                                        Visitor {sub.id.slice(0, 4)}
+                                    </span>
                                     <span className="time-ago">{sub.stars} ★</span>
                                 </div>
                                 <div className="item-snippet">{sub.text.slice(0, 30)}...</div>
@@ -116,19 +171,32 @@ export default function AdminDashboard() {
                     </div>
                 </aside>
 
-                {/* Center: Chat View */}
+                {/* Center View */}
                 <main className="chat-view">
                     {selectedSub ? (
                         <>
                             <header className="chat-view-header">
                                 <div>
-                                    <h2>Visitor {selectedSub.id.slice(0, 4)}</h2>
+                                    <h2>
+                                        Visitor {selectedSub.id.slice(0, 4)}
+                                        {selectedSub.is_fake && <span className="fake-badge">SUSPICIOUS</span>}
+                                        {selectedSub.is_deleted && <span className="deleted-badge">DELETED</span>}
+                                    </h2>
                                     <span className="subprocess-status">Ticket #{selectedSub.id.slice(0, 8)}</span>
+                                </div>
+                                <div className="header-actions">
+                                    {selectedSub.is_deleted ? (
+                                        <>
+                                            <button className="restore-btn" onClick={() => handleAction('restore', selectedSub.id)}>Restore ♻️</button>
+                                            <button className="purge-btn" onClick={() => handleAction('permanent', selectedSub.id)}>Delete Forever ❌</button>
+                                        </>
+                                    ) : (
+                                        <button className="delete-btn" onClick={() => handleAction('delete', selectedSub.id)}>Move to Trash 🗑️</button>
+                                    )}
                                 </div>
                             </header>
 
                             <div className="chat-stream">
-                                {/* User Message */}
                                 <div className="message-row user">
                                     <div className="bubble">
                                         {selectedSub.text}
@@ -136,7 +204,6 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                {/* AI Auto-Response */}
                                 <div className="message-row ai">
                                     <div className="bubble">
                                         {selectedSub.ai_response}
@@ -146,11 +213,11 @@ export default function AdminDashboard() {
                             </div>
                         </>
                     ) : (
-                        <div className="empty-state">Select a conversation</div>
+                        <div className="empty-state">Select a review</div>
                     )}
                 </main>
 
-                {/* Right: Details Panel */}
+                {/* Right Panel */}
                 <aside className="details-panel">
                     {selectedSub && (
                         <>

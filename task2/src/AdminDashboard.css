@@ -1,7 +1,6 @@
 .admin-layout {
     display: flex;
     flex-direction: column;
-    /* Changed to column to stack stats on top */
     height: 100vh;
     background: #F3F4F6;
     overflow: hidden;
@@ -15,7 +14,6 @@
     display: flex;
     gap: 2rem;
     height: 160px;
-    /* Fixed height for stats */
     flex-shrink: 0;
 }
 
@@ -93,7 +91,6 @@
     display: flex;
     flex: 1;
     overflow: hidden;
-    /* Contains the scrollable columns */
     background: white;
 }
 
@@ -110,9 +107,30 @@
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
     background: white;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 5px;
+}
+
+.view-toggle button {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #D1D5DB;
+    background: white;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-toggle button.active {
+    background: #2563EB;
+    color: white;
+    border-color: #2563EB;
 }
 
 .filter-select {
@@ -120,6 +138,7 @@
     padding: 4px;
     border: 1px solid #D1D5DB;
     border-radius: 4px;
+    width: 100%;
 }
 
 .submission-list {
@@ -149,6 +168,11 @@
 .inbox-item.active {
     background: #EFF6FF;
     border-left-color: var(--primary-blue);
+}
+
+.inbox-item.suspicious {
+    background: #FEF2F2;
+    border-left-color: #DC2626;
 }
 
 .item-row {
@@ -193,16 +217,63 @@
     align-items: center;
 }
 
-.chat-view-header h2 {
-    margin: 0;
-    font-size: 16px;
+.header-actions {
+    display: flex;
+    gap: 8px;
 }
 
-.subprocess-status {
+.delete-btn {
+    background: white;
+    border: 1px solid #DC2626;
+    color: #DC2626;
+    padding: 6px 12px;
+    border-radius: 6px;
     font-size: 12px;
-    color: var(--text-muted);
 }
 
+.delete-btn:hover {
+    background: #FEF2F2;
+}
+
+.restore-btn {
+    background: white;
+    border: 1px solid #059669;
+    color: #059669;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.purge-btn {
+    background: #DC2626;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.fake-badge {
+    margin-left: 8px;
+    background: #DC2626;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.deleted-badge {
+    margin-left: 8px;
+    background: #6B7280;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+/* Chat Stream & Bubbles (Reused) */
 .chat-stream {
     flex: 1;
     padding: 1.5rem;

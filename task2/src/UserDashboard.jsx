@@ -19,7 +19,8 @@ export default function UserDashboard() {
                 const res = await fetch('/api/submissions');
                 if (res.ok) {
                     const data = await res.json();
-                    setReviews(data.reverse()); // Newest first
+                    setReviews(data.filter(r => !r.is_deleted).reverse()); // Newest first
+
                 }
             } catch (err) {
                 console.error("Failed to load reviews", err);

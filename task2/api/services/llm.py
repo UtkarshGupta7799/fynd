@@ -20,10 +20,32 @@ URGENT_KEYWORDS = [
     "safety", "dangerous", "poison", "hurt", "injured"
 ]
 
+def detect_fake_review(text: str) -> bool:
+    """
+    Simple AI heuristic to detect fake/spam reviews.
+    """
+    if not text: return False
+    text = text.lower().strip()
+    
+    # Check 1: Repetition (e.g., "good good good good")
+    words = text.split()
+    if len(words) > 3 and len(set(words)) < len(words) * 0.5:
+        return True
+        
+    # Check 2: Gibberish / Key smash (very long words)
+    if any(len(w) > 20 for w in words):
+        return True
+        
+    # Check 3: Suspicious Patterns
+    fake_triggers = ["fake", "bot", "script", "test", "asdf"]
+    if any(t in text for t in fake_triggers):
+        return True
+
+    return False
+
 def generate_user_response(review_text: str, stars: int) -> str:
     """
-    Generates an enterprise-grade professional response based on sentiment analysis.
-    Simulates Amazon/Large-Corp customer service tone.
+    Generates an enterprise-grade professional response.
     """
     # HANDLE EMPTY TEXT
     if not review_text or not review_text.strip():
@@ -46,10 +68,10 @@ def generate_user_response(review_text: str, stars: int) -> str:
 
     # 2. Urgent / High Risk Scenarios
     if any(word in text_lower for word in URGENT_KEYWORDS):
-        return ("vWe treat this matter with the utmost seriousness. An escalation case has been created immediately. "
+        return ("We treat this matter with the utmost seriousness. An escalation case has been created immediately. "
                 "A senior support specialist will review your case. Please expect direct communication within the hour.")
 
-    # 3. Low Rating (1-2 Stars) - Empathetic Apology
+    # 3. Low Rating (1-2 Stars)
     if stars <= 2:
         if "wait" in text_lower or "slow" in text_lower or "delay" in text_lower:
             return ("We sincerely apologize for the delay. This falls below the standard of speed and efficiency "
@@ -66,12 +88,12 @@ def generate_user_response(review_text: str, stars: int) -> str:
         return ("We sincerely apologize for the dissatisfaction caused. We value you as a customer and would like "
                 "the opportunity to make this right. Please contact customer care so we can assist you directly.")
 
-    # 4. Neutral Rating (3 Stars) - Constructive Acknowledgment
+    # 4. Neutral Rating
     elif stars == 3:
         return ("Thank you for your feedback. We appreciate your honesty and are constantly working to improve. "
                 "Your comments have been noted by our quality assurance team to help us serve you better in the future.")
 
-    # 5. High Rating (4-5 Stars) - Professional Gratitude
+    # 5. High Rating
     else: 
         if "staff" in text_lower or "service" in text_lower:
             return ("Thank you for recognizing our team's efforts. We are delighted to hear you received excellent service. "
@@ -97,10 +119,16 @@ def generate_admin_summary(review_text: str) -> str:
 
 def generate_action_items(review_text: str, stars: int) -> list:
     """
-    Generates actionable SOPs (Standard Operating Procedures) for the admin team.
+    Generates actionable SOPs for the admin team.
     """
     actions = []
     
+    # 1. Fake Detection
+    if detect_fake_review(review_text):
+        actions.append("🚫 SUSPICIOUS: AI detected potential fake/spam review.")
+        actions.append("SOP-999: Move to Trash / Verify User Identity")
+        return actions # Return early to prioritize flagging
+
     if not review_text or not review_text.strip():
         if stars < 3:
             actions.append("SOP-200: Low Rating Investigation (No Text)")
@@ -119,7 +147,7 @@ def generate_action_items(review_text: str, stars: int) -> list:
     if any(word in text_lower for word in URGENT_KEYWORDS):
         actions.append("🚨 URGENT: Legal/Safety Risk Identified")
         actions.append("SOP-900: Execute Instant Escalation Protocol")
-        return actions # Return immediately for urgency
+        return actions 
 
     # Low Star Actions
     if stars < 3:
